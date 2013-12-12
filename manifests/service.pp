@@ -18,12 +18,15 @@ class docker::service (
   $service_state        = $docker::service_state,
   $root_dir             = $docker::root_dir,
 ){
+  package { 'inotify-tools': }
+  
   service { 'docker':
     ensure     => $service_state,
     enable     => true,
     hasstatus  => true,
     hasrestart => true,
     provider   => upstart,
+    require    => Package['inotify-tools'],
   }
 
   file { '/etc/init/docker.conf':

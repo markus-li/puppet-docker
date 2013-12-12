@@ -40,12 +40,14 @@ define docker::image(
       path    => ['/bin', '/usr/bin'],
       onlyif  => $image_find,
       timeout => 0,
+      require    => Service[docker],
     }
   } else {
     exec { $image_install:
       path    => ['/bin', '/usr/bin'],
       unless  => $image_find,
       timeout => 0,
+      require    => Service[docker],
     }
   }
 }

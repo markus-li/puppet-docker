@@ -4,12 +4,13 @@
 #
 define docker::run(
   $image,
+  $imagetag = undef,
   $command,
   $memory_limit = '0',
   $ports = [],
   $volumes = [],
   $links = [],
-  $use_name = false,
+  $use_name = true,  # Without this Upstart won't be able to stop the docker container properly
   $running = true,
   $volumes_from = false,
   $username = '',
@@ -19,6 +20,7 @@ define docker::run(
 ) {
 
   validate_re($image, '^[\S]*$')
+  validate_re($imagetag, '^[\S]*$')
   validate_re($title, '^[\S]*$')
   validate_re($memory_limit, '^[\d]*$')
   validate_string($command, $username, $hostname)
@@ -32,16 +34,17 @@ define docker::run(
 
   file { "/etc/init/docker-${title}.conf":
     ensure  => present,
-    content => template('docker/etc/init/docker-run.conf.erb')
+    content => template('docker/etc/init/docker-run.conf.erb'),
+    notify  => Service["docker-${title}"],
   }
 
   service { "docker-${title}":
     ensure     => $running,
     enable     => true,
     hasstatus  => true,
-    hasrestart => true,
-    provider   => upstart,
-    require    => File["/etc/init/docker-${title}.conf"],
+    hasrestart => false, # With this set to false changes to a job will be loaded directly
+    require    => Service[docker],
+#    require    => File["/etc/init/docker-${title}.conf"],
   }
 
 }

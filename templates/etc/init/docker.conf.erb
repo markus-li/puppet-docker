@@ -5,7 +5,14 @@ stop on runlevel [!2345]
 
 respawn
 
+# The Docker daemon mode does NOT fork, do NOT use "expect daemon" or "expect fork"!
+
+pre-start script
+  rm -f /var/run/docker.pid || true
+  rm -f /var/run/docker.sock || true
+end script
+
 script
-  /usr/bin/docker -d <% if @root_dir %>-g <%= @root_dir %><% end %> <% if @tcp_bind %>-H <%= @tcp_bind %><% end %><% if @socket_bind %> -H <%= @socket_bind %><% end %>
+  /usr/bin/docker -d <% if @root_dir %>-g <%= @root_dir %><% end %> <% if @tcp_bind %>-H <%= @tcp_bind %><% end %><% if @socket_bind %> -H <%= @socket_bind %><% end %> -r=false
 end script
 
